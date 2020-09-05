@@ -7,7 +7,7 @@ do
 	BATCHARGE=$(acpi -b | awk '{print $4}' | tr -d ',' | tr -d '%')
 	TEMP=$(acpi -t | awk '{print $1" "$2" "$3}' | tr [,] [.])
 	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|wc -l)
-	(echo "open 127.0.0.1 2947" && sleep 2 && echo "?POLL;") | telnet > /tmp/magoo
+	# (echo "open 127.0.0.1 2947" && sleep 2 && echo "?POLL;") | telnet > /tmp/magoo
 	grep active /tmp/magoo > /tmp/magoo2
 	if [ $? -eq 0 ]
 	then
