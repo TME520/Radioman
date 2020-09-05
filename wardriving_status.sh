@@ -32,7 +32,7 @@ do
 	if [ $BATCHARGE -lt 11 ]
 	then
 		echo "Warning: Battery is low." >> /tmp/tts
-	elif [ $BATCHARGE -lt 666 ]
+	elif [ $BATCHARGE -lt 6 ]
 	then
 		echo "Warning: Battery is very low. System will shutdown shortly." >> /tmp/tts
 	fi
