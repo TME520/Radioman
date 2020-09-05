@@ -2,15 +2,28 @@
 
 while true
 do
+	# Refreshing data
+	BATSTAT=$(acpi -b | awk '{print $3}' | tr -d ',')
+	BATCHARGE=$(acpi -b | awk '{print $4}' | tr -d '%')
+	TEMP=$(acpi -t | awk '{print $1" "$2" "$3}' | tr [,] [.])
+	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|wc -l)
+
+	# Preparing output
 	echo "Status report." > /tmp/tts
 	echo "Battery." >> /tmp/tts
-	acpi -b | awk '{print $3" "$4}' >> /tmp/tts &&  sed -i 's/,/./' /tmp/tts
+	echo $BATSTAT"." >> /tmp/tts
+	echo $BATCHARGE"%." >> /tmp/tts
 	echo "" >> /tmp/tts
-	echo "Temperature." >> /tmp/tts
-	acpi -t | awk '{print $1" "$2" "$3}' >> /tmp/tts && sed -i 's/,/./' /tmp/tts
-	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|wc -l)
+	if [ $BATCHARGE -lt 11 ]
+	then
+		echo "Warning: Battery is low." >> /tmp/tts
+	elif [ $BATCHARGE -lt 6 ]
+	then
+		echo "Warning: Battery is very low. System will shutdown shortly." >> /tmp/tts
+	fi
+	echo "Temperature. "$TEMP >> /tmp/tts
 	echo "" >> /tmp/tts
-	echo "Kismet count: "$KISMETCOUNT >> /tmp/tts
+	echo "Kismet count. "$KISMETCOUNT"." >> /tmp/tts
 	echo "" >> /tmp/tts
 	if [ "$KISMETCOUNT" == "0" ]
 	then
@@ -18,6 +31,8 @@ do
 	else
 		echo "All clear." >> /tmp/tts
 	fi
+
+	# Reading data out loud
 	festival --tts /tmp/tts
 	sleep 10 
 	mpg123 ./front-desk-bells-daniel_simon.mp3
