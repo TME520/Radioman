@@ -3,17 +3,27 @@
 while true
 do
 	# Refreshing data
+	PBCOUNT=0
 	BATSTAT=$(acpi -b | awk '{print $3}' | tr -d ',')
 	BATCHARGE=$(acpi -b | awk '{print $4}' | tr -d ',' | tr -d '%')
 	TEMP=$(acpi -t | awk '{print $1" "$2" "$3}' | tr [,] [.])
 	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|wc -l)
-	# (echo "open 127.0.0.1 2947" && sleep 2 && echo "?POLL;") | telnet > /tmp/magoo
-	grep active /tmp/magoo > /tmp/magoo2
-	if [ $? -eq 0 ]
+	gpspipe -n 30 -r > /tmp/magoo
+	grep GPGSV /tmp/magoo > /tmp/magoo2
+	SATINVIEW=$(tail -1 /tmp/magoo2 | awk -F ',' '{print $4}')
+	grep GPGSA /tmp/magoo > /tmp/magoo2
+	SATFIX=$(tail -1 /tmp/magoo2 | awk -F ',' '{print $3}')
+	SATFIXTYPE="Unknown"
+	if [ $SATFIX -eq 1 ]
 	then
-		GPSFIX=$(cat /tmp/magoo2 | awk -F ',' '{print $3}' | awk -F ':' '{print $2}')
-	else
-		GPSFIX="Failed to get GPS status."
+		SATFIXTYPE="No fix. Warning: no GPS location currently available."
+		((PBCOUNT++))
+	elif [ $SATFIX -eq 2 ]
+	then
+		SATFIXTYPE="2D fix."
+	elif [ $SATFIX -eq 3 ]
+	then
+		SATFIXTYPE="3D fix."
 	fi
 
 	# DEBUG
@@ -21,7 +31,9 @@ do
 	echo "[DEBUG] BATCHARGE="$BATCHARGE
 	echo "[DEBUG] TEMP="$TEMP
 	echo "[DEBUG] KISMETCOUNT="$KISMETCOUNT
-	echo "[DEBUG] GPSFIX="$GPSFIX
+	echo "[DEBUG] SATINVIEW="$SATINVIEW
+	echo "[DEBUG] SATFIX="$SATFIX
+	echo "[DEBUG] SATFIXTYPE="$SATFIXTYPE
 
 	# Preparing output
 	echo "Status report." > /tmp/tts
@@ -32,21 +44,28 @@ do
 	if [ $BATCHARGE -lt 11 ]
 	then
 		echo "Warning: Battery is low." >> /tmp/tts
-	elif [ $BATCHARGE -lt 6 ]
-	then
-		echo "Warning: Battery is very low. System will shutdown shortly." >> /tmp/tts
+		((PBCOUNT++))
 	fi
 	echo "Temperature. "$TEMP >> /tmp/tts
 	echo "" >> /tmp/tts
-	echo "Active GPS sources." >> /tmp/tts
-	echo $GPSFIX"." >> /tmp/tts
+	echo "GPS information." >> /tmp/tts
+	echo $SATINVIEW" GPS satellites in view. GPS fix type is "$SATFIXTYPE"." >> /tmp/tts
 	echo "Kismet count. "$KISMETCOUNT"." >> /tmp/tts
 	echo "" >> /tmp/tts
 	if [ "$KISMETCOUNT" == "0" ]
 	then
 		echo "Warning: Kismet is not running. I repeat, kismet is not running." >> /tmp/tts
+		((PBCOUNT++))
+	fi
+
+	if [ $PBCOUNT -eq 0 ]
+	then
+		echo "End of report. All clear." >> /tmp/tts
+	elif [ $PBCOUNT -eq 1 ]
+	then
+		echo "End of report. "$PBCOUNT" issue detected." >> /tmp/tts
 	else
-		echo "All clear." >> /tmp/tts
+		echo "End of report. "$PBCOUNT" issues detected." >> /tmp/tts
 	fi
 
 	# Reading data out loud
