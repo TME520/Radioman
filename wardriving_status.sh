@@ -108,9 +108,13 @@ do
 		echo "End of report. All clear." >> /tmp/tts
 	elif [ $PBCOUNT -eq 1 ]
 	then
-		echo "End of report. "$PBCOUNT" issue detected." >> /tmp/tts
+		echo "End of report."
+		echo "" >> /tmp/tts
+		echo $PBCOUNT" issue detected." >> /tmp/tts
 	else
-		echo "End of report. "$PBCOUNT" issues detected." >> /tmp/tts
+		echo "End of report."
+		echo "" >> /tmp/tts
+		echo $PBCOUNT" issues detected." >> /tmp/tts
 	fi
 
 	# Reading data out loud
