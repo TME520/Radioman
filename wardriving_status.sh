@@ -5,10 +5,14 @@ do
 	# Refreshing data
 	PBCOUNT=0
 	BATSTAT=$(acpi -b | awk '{print $3}' | tr -d ',')
-	KISMETSRCCNT=$(grep -c '^source=' /etc/kismet/kismet.conf)
-	if [ $KISMETSRCCNT -gt 0 ]
+	KISMETSRCCNT=0
+	if [ -f /etc/kismet/kismet.conf ]
 	then
-		grep '^source=' /etc/kismet/kismet.conf | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/if2check
+		KISMETSRCCNT=$(grep -c '^source=' /etc/kismet/kismet.conf)
+		if [ $KISMETSRCCNT -gt 0 ]
+		then
+			grep '^source=' /etc/kismet/kismet.conf | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/if2check
+		fi
 	fi
 	BATSTAT=$(acpi -b | awk '{print $3}' | tr -d ',')
 	BATCHARGE=$(acpi -b | awk '{print $4}' | tr -d ',' | tr -d '%')
