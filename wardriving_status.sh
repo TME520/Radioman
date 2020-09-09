@@ -3,12 +3,13 @@
 while true
 do
 	# Refreshing data
+	grep '^source=' /etc/kismet/kismet.conf | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/if2check
 	PBCOUNT=0
 	BATSTAT=$(acpi -b | awk '{print $3}' | tr -d ',')
 	BATCHARGE=$(acpi -b | awk '{print $4}' | tr -d ',' | tr -d '%')
 	TEMP=$(acpi -t | awk '{print $1" "$2" "$3}' | tr [,] [.])
 	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|wc -l)
-	gpspipe -n 30 -r > /tmp/magoo
+	gpspipe -n 30 -r -x 15 > /tmp/magoo
 	grep GPGSV /tmp/magoo > /tmp/magoo2
 	SATINVIEW=$(tail -1 /tmp/magoo2 | awk -F ',' '{print $4}')
 	grep GPGSA /tmp/magoo > /tmp/magoo2
