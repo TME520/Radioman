@@ -53,7 +53,7 @@ do
 	echo "Status report." > /tmp/tts
 	echo "" >> /tmp/tts
 	echo "GPS information." >> /tmp/tts
-	echo "Number of GPS satellites in view: "$SATINVIEW". GPS fix type is "$SATFIXTYPE"." >> /tmp/tts
+	echo "GPS satellites in view: "$SATINVIEW". GPS fix type is "$SATFIXTYPE"." >> /tmp/tts
 	echo "Kismet count. "$KISMETCOUNT"." >> /tmp/tts
 	echo "" >> /tmp/tts
 
