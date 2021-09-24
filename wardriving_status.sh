@@ -2,9 +2,47 @@
 
 while true
 do
+
+	clear
+
+	echo -n "💙"
 	# Refreshing data
+	ICONDISK="❓"
+	ICONCPU="❓"
+	ICONTEMP="❓"
+	ICONRAM="❓"
+	ICONBAT="❓"
+	ICONGPS="❓"
+	ICONWIFI="❓"
+	ICONKISMET="❓"
+	ICONGEN="❓"
 	PBCOUNT=0
 	KISMETSRCCNT=0
+	echo -n "💙"
+	FREERAM=$(free -mt | tail -1 | awk '{print $4}')
+	if [ $FREERAM -lt "512" ]
+	then
+		ICONRAM="⚠️"
+	else
+		ICONRAM="✅"
+	fi
+	echo -n "💙"
+	CPUUSAGE=$(uptime | awk -F "," '{print $3}' | awk '{print $3}' | awk -F "." '{print $1}')
+	if [ $CPUUSAGE -gt "3" ]
+	then
+		ICONCPU="⚠️"
+	else
+		ICONCPU="✅"
+	fi
+	echo -n "💙"
+	FREEDISK=$(df -h | grep -w "/" | awk '{print $5}' | tr -d '%')
+	if [ $FREEDISK -gt "75" ]
+	then
+		ICONDISK="⚠️"
+	else
+		ICONDISK="✅"
+	fi
+	echo -n "💙"
 	if [ -f /etc/kismet/kismet.conf ]
 	then
 		KISMETSRCCNT=$(grep -c '^source=' /etc/kismet/kismet.conf)
@@ -13,16 +51,19 @@ do
 			grep '^source=' /etc/kismet/kismet.conf | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/if2check
 		fi
 	fi
-	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|wc -l)
+	echo -n "💙"
+	KISMETCOUNT=$(ps -ef|grep -w [k]ismet|grep -v sudo|wc -l)
 	gpspipe -n 30 -r > /tmp/magoo
 	SATINVIEW="Unknown"
 	SATINVIEWCNT=$(grep -c GPGSV /tmp/magoo)
+	echo -n "💙"
 	if [ $SATINVIEWCNT -gt 0 ]
 	then
 		grep GPGSV /tmp/magoo > /tmp/magoo2
 		SATINVIEW=$(tail -1 /tmp/magoo2 | awk -F ',' '{print $4}')
 	fi
 	SATFIXTYPE="Unknown"
+	echo -n "💙"
 	SATFIXCNT=$(grep -c GPGSA /tmp/magoo)
 	if [ $SATFIXCNT -gt 0 ]
 	then
@@ -40,15 +81,8 @@ do
 		fi
 	fi
 
-	# DEBUG
-	echo "[DEBUG] KISMETCOUNT="$KISMETCOUNT
-	echo "[DEBUG] SATINVIEW="$SATINVIEW
-	echo "[DEBUG] SATFIX="$SATFIX
-	echo "[DEBUG] SATFIXTYPE="$SATFIXTYPE
-	echo "[DEBUG] SATFIXCNT="$SATFIXCNT
-	echo "[DEBUG] KISMETSRCCNT="$KISMETSRCCNT
-
-	# Preparing output
+	# Preparing spoken output
+	echo -n "💙"
 	# Metrics
 	echo "Status report." > /tmp/tts
 	echo "" >> /tmp/tts
@@ -57,34 +91,49 @@ do
 	echo "Kismet count. "$KISMETCOUNT"." >> /tmp/tts
 	echo "" >> /tmp/tts
 
-	# Announcing issues
+	# Counting issues
+	echo -n "💙"
 	if [ $SATFIXCNT -eq 0 ]
 	then
 		echo "Warning: No GPS location is being recorded." >> /tmp/tts 
+		ICONGPS="❌"
 		((PBCOUNT++))
+	else
+		ICONGPS="✅"
 	fi
+	echo -n "💙"
 	if [ $SATINVIEWCNT -eq 0 ]
 	then
 		echo "Warning: No GPS satellites in view." >> /tmp/tts 
+		ICONGPS="❌"
 		((PBCOUNT++))
+	else
+		ICONGPS="✅"
 	fi
+	echo -n "💙"
 	if [ $KISMETCOUNT -eq 0 ]
 	then
 		echo "Warning: Kismet is not running. I repeat, kismet is not running." >> /tmp/tts
+		ICONKISMET="❌"
 		((PBCOUNT++))
+	else
+		ICONKISMET="✅"
 	fi
+	echo -n "💙"
 	if [ $KISMETSRCCNT -eq 0 ]
 	then
 		echo "Warning: No sources configured in Kismet. Wireless networks are not getting mapped." >> /tmp/tts
+		ICONKISMET="❌"
 		((PBCOUNT++))
 	else
+		ICONWIFI="✅"
 		while read wifi_interface
 		do
 			WIFIIFSTATUS=$(iwconfig $wifi_interface 2>&1 | grep -c "No such device")
-			echo "WIFIIFSTATUS="$WIFIIFSTATUS
 			if [ $WIFIIFSTATUS -gt 0 ]
 			then
 				echo "Warning: wireless interface DOWN." >> /tmp/tts
+				ICONWIFI="❌"
 				((PBCOUNT++))
 			fi
 		done < /tmp/if2check
@@ -93,21 +142,46 @@ do
 	if [ $PBCOUNT -eq 0 ]
 	then
 		echo "End of report. All clear." >> /tmp/tts
+		ICONGEN="✅"
 	elif [ $PBCOUNT -eq 1 ]
 	then
-		echo "End of report."
 		echo "" >> /tmp/tts
 		echo $PBCOUNT" issue detected." >> /tmp/tts
+		ICONGEN="⚠️"
 	else
-		echo "End of report."
 		echo "" >> /tmp/tts
 		echo $PBCOUNT" issues detected." >> /tmp/tts
+		ICONGEN="⛔️"
 	fi
+
+	# Preparing console output
+	echo ""
+	echo ""
+	echo $ICONDISK"  Disk space"
+	echo $ICONCPU"  CPU usage"
+	echo $ICONTEMP"  Temperature"
+	echo $ICONRAM"  RAM"
+	echo $ICONBAT"  Battery"
+	echo $ICONGPS"  GPS"
+	echo $ICONWIFI"  WIFI"
+	echo $ICONKISMET"  Kismet"
+	echo ""
+	echo $ICONGEN"  General status"
+
+	# DEBUG
+	echo -e "\033[0;34m"
+	echo "[DEBUG] KISMETCOUNT="$KISMETCOUNT
+	echo "[DEBUG] SATINVIEW="$SATINVIEW
+	echo "[DEBUG] SATFIX="$SATFIX
+	echo "[DEBUG] SATFIXTYPE="$SATFIXTYPE
+	echo "[DEBUG] SATFIXCNT="$SATFIXCNT
+	echo "[DEBUG] KISMETSRCCNT="$KISMETSRCCNT
+	echo -e "\033[0m"
 
 	# Reading data out loud
 	festival --tts /tmp/tts
 	sleep 10 
-	mpg123 ./front-desk-bells-daniel_simon.mp3
+	mpg123 -q ./front-desk-bells-daniel_simon.mp3
 	sleep 10
 done
 
