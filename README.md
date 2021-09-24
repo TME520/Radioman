@@ -10,7 +10,7 @@ Scripts and stuff used for my wardriving setup.
 ## Setup
 
 1. `git clone https://github.com/TME520/wardriving.git`
-2. `apt install acpi gpsd gpsd-clients festival mpg123`
+2. `apt install acpi gpsd gpsd-clients festival mpg123 fonts-emojione`
 
 ## Usage
 
