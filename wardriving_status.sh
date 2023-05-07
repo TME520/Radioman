@@ -1,14 +1,21 @@
 #!/bin/bash
 
-source ./radioman.conf
+source ./conf/radioman.conf
+
+RED="\e[31m"
+BLUE="\e[34m"
+ENDCOLOR="\e[0m"
 
 while true
 do
 
 	clear
 
-	echo -n "💙"
-	# Refreshing data
+        echo -e "${RED}############${ENDCOLOR}"
+        echo -e "${RED}# RADIOMAN #${ENDCOLOR}"
+        echo -e "${RED}############${ENDCOLOR}"
+        echo "" 
+	echo -n "Refreshing status: 💙"
 	ICONDISK="❓"
 	ICONCPU="❓"
 	ICONTEMP="❓"
@@ -207,7 +214,7 @@ do
 	# Reading data out loud
 	festival -b --tts /tmp/tts
 	sleep 10 
-	mpg123 -q ./front-desk-bells-daniel_simon.mp3
+	mpg123 -q ./assets/front-desk-bells-daniel_simon.mp3
 	sleep 10
 done
 
