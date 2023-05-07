@@ -1,11 +1,17 @@
-# wardriving
-Scripts and stuff used for my wardriving setup.
+# Radioman: Wardriving companion
+Keeps an eye on your wardriving setup and gear while you keep your eyes on the road
+
+Made by a wardriver for wardrivers
+
+## What it does
+
+- Verbally gives you the status of your wardriving setup
+- You can keep your eyes on the road without worrying about something going wrong
+- Checks: Disk space, CPU & RAM usage, WiFi & Bluetooth interfaces status, GPS data and Kismet health
 
 ## Files
 
 - `wardriving_status.sh`: It's the main script, the one you have to start in order to use this tool,
-- `wardriving_status-RPI.sh`: A deprecated version of the tool that was aimed specifically at Raspberry Pi computers,
-- `wardriving_status-dummy-demo.sh`: A demonstration version of the tool that uses fake data. Not meant to be used at all.
 
 ## Setup
 
