@@ -144,6 +144,7 @@ do
 		done < /tmp/if2check
                 WIFIIFCNT=$(wc -l /tmp/if2check  | awk '{print $1}')
                 echo "Number of wifi interfaces: $WIFIIFCNT" >> /tmp/tts
+	        echo "" >> /tmp/tts
                 echo -n "💙"
                 ICONBT="✅"
                 while read bt_interface
@@ -156,6 +157,9 @@ do
 				((PBCOUNT++))
                         fi
                 done < /tmp/bt2check
+                BTIFCNT=$(wc -l /tmp/bt2check  | awk '{print $1}')
+                echo "Number of bluetooth interfaces: $BTIFCNT" >> /tmp/tts
+	        echo "" >> /tmp/tts
 	fi
 
 	if [ $PBCOUNT -eq 0 ]
@@ -182,8 +186,8 @@ do
 	echo $ICONRAM"  RAM"
 	echo $ICONBAT"  Battery"
 	echo $ICONGPS"  GPS"
-	echo $ICONWIFI"  WIFI"
-	echo $ICONBT"  BLUETOOTH"
+	echo $ICONWIFI"  Wifi"
+	echo $ICONBT"  Bluetooth"
 	echo $ICONKISMET"  Kismet"
 	echo ""
 	echo $ICONGEN"  General status"
@@ -196,6 +200,8 @@ do
 	echo "[DEBUG] SATFIXTYPE="$SATFIXTYPE
 	echo "[DEBUG] SATFIXCNT="$SATFIXCNT
 	echo "[DEBUG] KISMETSRCCNT="$KISMETSRCCNT
+        echo "[DEBUG] WIFIIFCNT="$WIFIIFCNT
+        echo "[DEBUG] BTIFCNT="$BTIFCNT
 	echo -e "\033[0m"
 
 	# Reading data out loud
