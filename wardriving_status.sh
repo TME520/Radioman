@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./radioman.conf
+
 while true
 do
 
@@ -14,6 +16,7 @@ do
 	ICONBAT="❓"
 	ICONGPS="❓"
 	ICONWIFI="❓"
+        ICONBT="❓"
 	ICONKISMET="❓"
 	ICONGEN="❓"
 	PBCOUNT=0
@@ -43,12 +46,13 @@ do
 		ICONDISK="✅"
 	fi
 	echo -n "💙"
-	if [ -f /etc/kismet/kismet.conf ]
+	if [ -f $KISMETCONF ]
 	then
-		KISMETSRCCNT=$(grep -c '^source=' /etc/kismet/kismet.conf)
+		KISMETSRCCNT=$(grep -c '^source=' $KISMETCONF)
 		if [ $KISMETSRCCNT -gt 0 ]
 		then
-			grep '^source=' /etc/kismet/kismet.conf | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/if2check
+			grep '^source=' $KISMETCONF | grep '=wl' | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/if2check
+			grep '^source=' $KISMETCONF | grep '=hci' | awk -F '=' '{print $2}' | awk -F ':' '{print $1}' > /tmp/bt2check
 		fi
 	fi
 	echo -n "💙"
@@ -126,17 +130,32 @@ do
 		ICONKISMET="❌"
 		((PBCOUNT++))
 	else
+                echo -n "💙"
 		ICONWIFI="✅"
 		while read wifi_interface
 		do
 			WIFIIFSTATUS=$(iwconfig $wifi_interface 2>&1 | grep -c "No such device")
 			if [ $WIFIIFSTATUS -gt 0 ]
 			then
-				echo "Warning: wireless interface DOWN." >> /tmp/tts
+				echo "Warning: wireless interface $wifi_interface DOWN." >> /tmp/tts
 				ICONWIFI="❌"
 				((PBCOUNT++))
 			fi
 		done < /tmp/if2check
+                WIFIIFCNT=$(wc -l /tmp/if2check  | awk '{print $1}')
+                echo "Number of wifi interfaces: $WIFIIFCNT" >> /tmp/tts
+                echo -n "💙"
+                ICONBT="✅"
+                while read bt_interface
+                do
+                        BTIFSTATUS=$(hciconfig $bt_interface 2>&1 | grep -c "No such device")
+                        if [ $BTIFSTATUS -gt 0 ]
+                        then
+				echo "Warning: bluetooth interface $bt_interface DOWN." >> /tmp/tts
+				ICONBT="❌"
+				((PBCOUNT++))
+                        fi
+                done < /tmp/bt2check
 	fi
 
 	if [ $PBCOUNT -eq 0 ]
@@ -164,6 +183,7 @@ do
 	echo $ICONBAT"  Battery"
 	echo $ICONGPS"  GPS"
 	echo $ICONWIFI"  WIFI"
+	echo $ICONBT"  BLUETOOTH"
 	echo $ICONKISMET"  Kismet"
 	echo ""
 	echo $ICONGEN"  General status"
@@ -179,7 +199,7 @@ do
 	echo -e "\033[0m"
 
 	# Reading data out loud
-	festival --tts /tmp/tts
+	festival -b --tts /tmp/tts
 	sleep 10 
 	mpg123 -q ./front-desk-bells-daniel_simon.mp3
 	sleep 10
